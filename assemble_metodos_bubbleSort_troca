@@ -1,0 +1,109 @@
+troca:
+        daddiu  $sp,$sp,-48
+        sd      $fp,40($sp)
+        move    $fp,$sp
+        move    $3,$4
+        move    $2,$5
+        sll     $3,$3,0
+        sw      $3,16($fp)
+        sll     $2,$2,0
+        sw      $2,20($fp)
+        lw      $2,16($fp)
+        sw      $2,0($fp)
+        lw      $2,20($fp)
+        sw      $2,16($fp)
+        lw      $2,0($fp)
+        sw      $2,20($fp)
+        nop
+        move    $sp,$fp
+        ld      $fp,40($sp)
+        daddiu  $sp,$sp,48
+        j       $31
+        nop
+
+bubble_sort:
+        daddiu  $sp,$sp,-64
+        sd      $31,56($sp)
+        sd      $fp,48($sp)
+        sd      $28,40($sp)
+        move    $fp,$sp
+        lui     $28,%hi(%neg(%gp_rel(bubble_sort)))
+        daddu   $28,$28,$25
+        daddiu  $28,$28,%lo(%neg(%gp_rel(bubble_sort)))
+        sd      $4,16($fp)
+        move    $2,$5
+        sll     $2,$2,0
+        sw      $2,24($fp)
+        li      $2,1                        # 0x1
+        sw      $2,0($fp)
+        b       .L3
+        nop
+
+.L7:
+        sw      $0,4($fp)
+        b       .L4
+        nop
+
+.L6:
+        lw      $2,4($fp)
+        dsll    $2,$2,2
+        ld      $3,16($fp)
+        daddu   $2,$3,$2
+        lw      $3,0($2)
+        lw      $2,4($fp)
+        daddiu  $2,$2,1
+        dsll    $2,$2,2
+        ld      $4,16($fp)
+        daddu   $2,$4,$2
+        lw      $2,0($2)
+        slt     $2,$2,$3
+        beq     $2,$0,.L5
+        nop
+
+        lw      $2,4($fp)
+        dsll    $2,$2,2
+        ld      $3,16($fp)
+        daddu   $2,$3,$2
+        lw      $4,0($2)
+        lw      $2,4($fp)
+        daddiu  $2,$2,1
+        dsll    $2,$2,2
+        ld      $3,16($fp)
+        daddu   $2,$3,$2
+        lw      $2,0($2)
+        move    $5,$2
+        ld      $2,%got_disp(troca)($28)
+        move    $25,$2
+1:      jalr        $25
+        nop
+
+.L5:
+        lw      $2,4($fp)
+        addiu   $2,$2,1
+        sw      $2,4($fp)
+.L4:
+        lw      $2,24($fp)
+        addiu   $2,$2,-1
+        lw      $3,4($fp)
+        slt     $2,$3,$2
+        bne     $2,$0,.L6
+        nop
+
+        lw      $2,0($fp)
+        addiu   $2,$2,1
+        sw      $2,0($fp)
+.L3:
+        lw      $3,0($fp)
+        lw      $2,24($fp)
+        slt     $2,$3,$2
+        bne     $2,$0,.L7
+        nop
+
+        nop
+        move    $sp,$fp
+        ld      $31,56($sp)
+        ld      $fp,48($sp)
+        ld      $28,40($sp)
+        daddiu  $sp,$sp,64
+        j       $31
+        nop
