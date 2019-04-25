@@ -1,0 +1,20 @@
+void troca(int num, int num2) {
+    int aux = num;
+    num = num2;
+    num2 = aux;
+}
+
+
+void bubble_sort (int vetor[], int n) {
+    for (int k = 1; k < n; k++) {
+        //printf("\n[%d] ", k);
+
+        for (int j = 0; j < n - 1; j++) {
+            //printf("%d, ", j);
+
+            if (vetor[j] > vetor[j + 1]) {
+                troca(vetor[j], vetor[j+1]);
+            }
+        }
+    }
+}
