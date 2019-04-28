@@ -76,8 +76,29 @@ troca:
 #		COMPLETAR
 
 mostra_vetor:						
+		la $s1, vetor		# $t1 = endereço inicial de vetor na memória
+		la $s7, n		# $t7 = endereço de n
+	
+		addi $s0, $zero, 0	# i = 0
+		lw $s7, ($s7) 		# lê o tamanho do vetor
+		subi $s7, $s7, 1	# n = n - 1
+			
+	for:    slt $s2, $s0, $s7	# condition (step 1)
+		beq $s2, $zero, endfor  # condition (step 2)
+		# put your code here
 
-	########### COMPLETAR ########### 
+		sll $s3, $s0, 2		# $t3 = 4 * i
+		add $s3, $s1, $s3	# $t3 = $t1 + (4 * i)
+		lw $s4, 0 ($s3)		# $t3 = vet[$t1]
+			
+		addi $a0, $s4, 0	# adiciona como parâmetro
+		
+		# chamar função
+		
+		# end of code	
+		addi $t0, $t0, 1 # i++
+		j for # return to loop structure
+	endfor: # end of program
 
 #------------------------------------------------------------------------------
 # ROTINA mostra_elemento_vetor(índice)
