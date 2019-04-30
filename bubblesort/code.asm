@@ -47,9 +47,47 @@
 main:		addi $v0, $zero, 4	# Chamada ao sistema para escrever string na tela
 		la $a0, msg1		# $a0 = endereço da string a ser escrita na tela
 		syscall
-					
-		########## COMPLETAR ##########
-
+		
+		# mostrar vetor	
+				
+		#while
+		addi $s2, $zero, 1 		 # trocou = 1 (true)
+	while:  slt $t1, $s0, $zero 		 # limite($s0) < 0 =  ( true ($t1): 1, false ($t1): 0  )
+		bne $t1, $zero, fimloop 	 # limite < 0 false,    fimloop
+		beq $s2, $zero, fimloop 	 # trocou($s2) == zero, fimloop
+	
+		add $s2, $zero, $zero		 # trocou = false	
+	
+		#for
+		addi $s3, $zero, 0 # i = 0
+	for:    slt $t3, $s3, $s0 # i($s3) < limite($s0)
+		beq $t3, $zero, endfor  # testa condicao
+			#vetor[i]
+			sll $t3, $s3, 2		# $t3 = 4 * i
+			add $t0, $s1, $t3	# $t0 = $t1 + (4 * i)
+			lw $t3, 0 ($t0)		# $t3 = vet[$t0] -> $t3 = vet[i]
+			#vetor[i+1]
+			addi $t7, $s3, 1
+			sll $t4, $t7, 2		# $t4 = 4 * (i + 1)
+			add $t2, $s1, $t4	# $t4 = $t1 + (4 * i)
+			lw $t4, 0 ($t2)		# $t4 = vet[$t2] -> $t4 = vet[i]
+				#if
+				slt $t1, $t4, $t3	# vetor[i] > vetor[i+1] # vetor[i+1]  <= vetor[i] 
+				beq $t1, $zero, fimif	#
+				# metodo troca
+					add $a0, $zero, $t0	# parametro 1: end memo de vet(i)
+					add $a1, $zero, $t2	# parametro 2: end memo de vet(i + 1)
+					#j troca
+					addi $s2, $zero, 1	# trocou = true
+				
+				fimif:
+				addi $s3, $s3, 1 # i++
+				j for # return to for structure
+		endfor: 
+			# mostrar vetor	
+			subi $s0, $s0, 1 # limite--
+			j while
+	fimloop:
 		addi $v0, $zero, 10	# Chamada ao sistema para encerrar programa
 		syscall
 #------------------------------------------------------------------------------
@@ -62,8 +100,11 @@ main:		addi $v0, $zero, 4	# Chamada ao sistema para escrever string na tela
 #		COMPLETAR
 
 troca:															
+	lw $t3, 0 ($a0)		# $t3 = vet[$t0] -> $t3 = vet[i]
+	lw $t4, 0 ($a1)		# $t4 = vet[$t2] -> $t4 = vet[i + 1]
 	
-	########### COMPLETAR ########### 
+	sw $t4, ($t0)		# vet[i] = $t4
+	sw $t3, ($t2)		# vet[i + 1] = $t3	
 
 #------------------------------------------------------------------------------
 # ROTINA mostra_vetor
