@@ -53,13 +53,23 @@
 #		$t4: vet[i + 1]
 
 		# Inicialização
-main:		addi $v0, $zero, 4	# Chamada ao sistema para escrever string na tela
-		la $a0, msg1		# $a0 = endereço da string a ser escrita na tela
+main:		addi $v0, $zero, 4		# Chamada ao sistema para escrever string na tela
+		la $a0, msg1			# $a0 = endereço da string a ser escrita na tela
 		syscall
-		la $s4, n			# $s4 = endereço de limite
-		lw $s4, 0 ($s4)			# $s4 = n
-		addi $s0, $s4, -1		# limite = n - 1
+		
+		addi $v0, $zero, 4		# Chamada ao sistema para escrever string na tela
+		la $a0, msgN			# $a0 = endereço da string a ser escrita na tela
+		syscall
+		
+		li $v0, 5			# chamada do sistema para ler um inteiro
+		syscall				
+		move $s4, $v0			# lê n - $s4 = n
+		
 		la $s1, vetor			# $s1 = endereço inicial do vetor
+		
+		jal ler_vetor
+
+		addi $s0, $s4, -1		# limite = n - 1
 		addi $s2, $zero, 1 		# trocou = 1 (true)
 	
 		jal mostra_vetor
@@ -115,6 +125,43 @@ troca:	lw $t0, 0 ($a0)		# $t0 = vet[$a0] -> $t0 = vet[i]
 	sw $t1, ($a0)		# vet[i] = $t1
 	sw $t0, ($a1)		# vet[i + 1] = $t0
 	jr $ra
+
+#------------------------------------------------------------------------------
+# ROTINA ler_vetor
+#		Ler vetor com a entrada do usuário
+# Algoritmo:
+#		for j = 0 ; j < n ; j++
+#			vet[j] = numero_do_usuario
+# Uso dos registradores:
+#		#s1: endereco de memoria de vetor
+#		$s4: n
+#		$s5: i
+#		$t1: condicoes
+#		$t2: inteiro lido
+
+ler_vetor:	addi $sp, $sp, -4		# adiciona mais um nivel na pilha
+		sw $ra, 0, ($sp)		# salvo o retorno para a main na pilha
+		addi $s5, $zero, 0		# i = 0
+	for_ler:  slt $t1, $s5, $s4		# $t1 = i($s5) < n($s4)
+		  beq $t1, $zero, endfor_ler  	# condicao (i < n)
+
+		  addi $v0, $zero, 4		# Chamada ao sistema para escrever string na tela
+		  la $a0, msgLerI		# $a0 = endereço da string a ser escrita na tela
+		  syscall
+		  
+		  li $v0, 5			# chamada do sistema para ler um inteiro
+		  syscall				
+		  move $t2, $v0			# lê inteiro
+		  
+	  	  sll $t3, $s5, 2		# $t3 = 4 * i
+		  add $t3, $s1, $t3		# $t3 = $s1 + (4 * i)
+		  sw $t2, 0 ($t3)
+      
+		  addi $s5, $s5, 1		# i++
+		  j for_ler 			# retorna loop
+	endfor_ler:	lw $ra, 0, ($sp)	# lê o retorno para a main da pilha
+			addi $sp, $sp, 4	# limpa pilha 
+			jr $ra			# retorna para a main
 
 #------------------------------------------------------------------------------
 # ROTINA mostra_vetor
@@ -211,6 +258,8 @@ vetor:			.word 9 1 10 2 6 13 15 0 12 5 7 14 4 3 11 8
 #vetor:			.word 9 1 10 2 9 6 13 15 13 0 12 5 6 0 5 7
 			# Strings para impressão de mensagens
 msg1:			.asciiz "\nOrdenação\n"
+msgN:			.asciiz "\nDigite um N para o vetor:\n"
+msgLerI:		.asciiz "\nDigite um valor:\n"
 msg2:			.asciiz "Tecle enter"
 			# Escala de 16 cores em azul
 escala_azul:		.word 0x00CCFFFF, 0x00BEEEFB, 0x00B0DDF8, 0x00A3CCF4, 0x0095BBF1, 0x0088AAEE, 0x007A99EA, 0x006C88E7, 0x005F77E3, 0x005166E0, 0x004455DD, 0x003644D9, 0x002833D6, 0x001B22D2, 0x000D11CF, 0x000000CC
