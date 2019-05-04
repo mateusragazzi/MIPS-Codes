@@ -41,54 +41,62 @@
 #			limite--
 #		Encerra execução do programa
 # Uso dos registradores:
-#		COMPLETAR
+#		$s0: limite
+#		$s1: endereco inicial do vetor
+#		$s2: trocou (boolean)
+#		$s3: i - for
+#		$t0: end memoria de vet[i]
+#		$t1: condicoes
+#		$t2: end memoria de vet[i + 1]
+#		$t3: vet[i]
+#		$t4: vet[i + 1]
 
 		# Inicialização
 main:		addi $v0, $zero, 4	# Chamada ao sistema para escrever string na tela
 		la $a0, msg1		# $a0 = endereço da string a ser escrita na tela
 		syscall
-		
-		# mostrar vetor	
-				
-		#while
-		addi $s2, $zero, 1 		 # trocou = 1 (true)
-	while:  slt $t1, $s0, $zero 		 # limite($s0) < 0 =  ( true ($t1): 1, false ($t1): 0  )
-		bne $t1, $zero, fimloop 	 # limite < 0 false,    fimloop
-		beq $s2, $zero, fimloop 	 # trocou($s2) == zero, fimloop
+		la $s0, n			# $s0 = endereço de limite
+		lw $s0, 0 ($s0)			# $s0 = n
+		addi $s0, $s0, -1		# limite = n - 1
+		la $s1, vetor			# $s1 = endereço inicial do vetor
+		addi $s2, $zero, 1 		# trocou = 1 (true)
 	
-		add $s2, $zero, $zero		 # trocou = false	
+		jal mostra_vetor
 	
-		#for
-		addi $s3, $zero, 0 # i = 0
-	for:    slt $t3, $s3, $s0 # i($s3) < limite($s0)
-		beq $t3, $zero, endfor  # testa condicao
+	while:  slt $t1, $s0, $zero 		# n($s0) < 0 =  ( true ($t1): 1, false ($t1): 0  )
+		bne $t1, $zero, fimloop 	# limite < 0 false,    fimloop
+		beq $s2, $zero, fimloop 	# trocou($s2) == zero, fimloop
+		add $s2, $zero, $zero		# trocou = false	
+		addi $s3, $zero, 0		# i = 0
+	for:    slt $t1, $s3, $s0 		# i($s3) < limite($s0)
+		beq $t1, $zero, endfor  	# testa condicao
 			#vetor[i]
 			sll $t3, $s3, 2		# $t3 = 4 * i
-			add $t0, $s1, $t3	# $t0 = $t1 + (4 * i)
+			add $t0, $s1, $t3	# $t0 = $s1 + (4 * i)
 			lw $t3, 0 ($t0)		# $t3 = vet[$t0] -> $t3 = vet[i]
 			#vetor[i+1]
-			addi $t7, $s3, 1
-			sll $t4, $t7, 2		# $t4 = 4 * (i + 1)
-			add $t2, $s1, $t4	# $t4 = $t1 + (4 * i)
-			lw $t4, 0 ($t2)		# $t4 = vet[$t2] -> $t4 = vet[i]
+			addi $t4, $s3, 1	# $t4 = i + 1
+			sll $t4, $t4, 2		# $t4 = 4 * $t4 (i + 1)
+			add $t2, $s1, $t4	# $t2 = $s1 + (4 * (i + 1))
+			lw $t4, 0 ($t2)		# $t4 = vet[$t2] -> $t4 = vet[i + 1]
 				#if
-				slt $t1, $t4, $t3	# vetor[i] > vetor[i+1] # vetor[i+1]  <= vetor[i] 
-				beq $t1, $zero, fimif	#
+				slt $t1, $t4, $t3		# vetor[i] > vetor[i+1] # vetor[i+1]  <= vetor[i] 
+				beq $t1, $zero, fimif		# testa condicao
 				# metodo troca
-					add $a0, $zero, $t0	# parametro 1: end memo de vet(i)
-					add $a1, $zero, $t2	# parametro 2: end memo de vet(i + 1)
-					#j troca
+					add $a0, $zero, $t0	# parametro 1: end memo de vet(i) - $t0
+					add $a1, $zero, $t2	# parametro 2: end memo de vet(i + 1) - $t2
+					jal troca
 					addi $s2, $zero, 1	# trocou = true
-				
+				# fim metodo troca
 				fimif:
-				addi $s3, $s3, 1 # i++
-				j for # return to for structure
+				addi $s3, $s3, 1 		# i++
+				j for 				# return to for structure
 		endfor: 
-			# mostrar vetor	
-			subi $s0, $s0, 1 # limite--
+			jal mostra_vetor
+			subi $s0, $s0, 1 			# limite--
 			j while
 	fimloop:
-		addi $v0, $zero, 10	# Chamada ao sistema para encerrar programa
+		addi $v0, $zero, 10				# Chamada ao sistema para encerrar programa
 		syscall
 #------------------------------------------------------------------------------
 # ROTINA troca($a0, $a1)
@@ -97,14 +105,15 @@ main:		addi $v0, $zero, 4	# Chamada ao sistema para escrever string na tela
 #		$a0: endereço de vetor[i] na memória
 #		$a1: endereço de vetor[i+1] na memória
 # Uso dos registradores:
-#		COMPLETAR
+#		$t0: vet[i]
+#		$t1: vet[i + 1]
 
-troca:															
-	lw $t3, 0 ($a0)		# $t3 = vet[$t0] -> $t3 = vet[i]
-	lw $t4, 0 ($a1)		# $t4 = vet[$t2] -> $t4 = vet[i + 1]
+troca:	lw $t0, 0 ($a0)		# $t0 = vet[$a0] -> $t0 = vet[i]
+	lw $t1, 0 ($a1)		# $t1 = vet[$a1] -> $t1 = vet[i + 1]
 	
-	sw $t4, ($t0)		# vet[i] = $t4
-	sw $t3, ($t2)		# vet[i + 1] = $t3	
+	sw $t1, ($a0)		# vet[i] = $t1
+	sw $t0, ($a1)		# vet[i + 1] = $t0
+	jr $ra
 
 #------------------------------------------------------------------------------
 # ROTINA mostra_vetor
@@ -114,33 +123,24 @@ troca:
 #		for j = 0 ; j < n ; j++
 #			mostra_elemento_vetor(j)
 # Uso dos registradores:
-#		COMPLETAR
+#		$s4: i
+#		$s5: n
+#		$t1: condicoes
 
-mostra_vetor:						
-		la $s1, vetor		# $t1 = endereço inicial de vetor na memória
-		la $s7, n		# $t7 = endereço de n
-	
-		addi $s0, $zero, 0	# i = 0
-		lw $s7, ($s7) 		# lê o tamanho do vetor
-		subi $s7, $s7, 1	# n = n - 1
-			
-	for:    slt $s2, $s0, $s7	# condition (step 1)
-		beq $s2, $zero, endfor  # condition (step 2)
-		# put your code here
-
-		sll $s3, $s0, 2		# $t3 = 4 * i
-		add $s3, $s1, $s3	# $t3 = $t1 + (4 * i)
-		lw $s4, 0 ($s3)		# $t3 = vet[$t1]
-			
-		addi $a0, $s4, 0	# adiciona como parâmetro
-		
-		# chamar função
-		
-		# end of code	
-		addi $t0, $t0, 1 # i++
-		j for # return to loop structure
-	endfor: # end of program
-
+mostra_vetor:	addi $sp, $sp, -4		# adiciona mais um nivel na pilha
+		sw $ra, 0, ($sp)		# salvo o retorno para a main na pilha
+		la $s5, n			# $t7 = endereço de n
+		lw $s5, ($s5) 			# lê o tamanho do vetor
+		addi $s4, $zero, 0		# i = 0
+	for_vet:  slt $t1, $s4, $s5		# $t1 = i($s4) < n($s5)
+		  beq $t1, $zero, endfor_vet  	# condicao (i < n)
+       		  addi $a0, $s4, 0		# adiciona como parâmetro (i)
+		  jal mostra_elemento_vetor
+		  addi $s4, $s4, 1		# i++
+		  j for_vet 			# retorna loop
+	endfor_vet:	lw $ra, 0, ($sp)	# lê o retorno para a main da pilha
+			addi $sp, $sp, 4	# limpa pilha 
+			jr $ra			# retorna para a main
 #------------------------------------------------------------------------------
 # ROTINA mostra_elemento_vetor(índice)
 #		Mostra no display bitmap cor correspondente ao elemento vetor[índice]
@@ -163,8 +163,10 @@ mostra_vetor:
 #		$t6: endereço no display onde elemento do vetor deve ser desenhado
 #		$gp: endereço inicial do display
 
-																	# Prólogo
-mostra_elemento_vetor:	addi	$sp, $sp, -28		# Aloca espaço para 7 palavras na pilha
+			# Prólogo
+mostra_elemento_vetor:	addi 	$sp, $sp, -4		# aloca espaço na pilha
+			sw 	$ra, 0, ($sp)		# salva o retorno para a mostra_vetor na pilha
+			addi	$sp, $sp, -28		# Aloca espaço para 7 palavras na pilha
 			sw	$t0, 0 ($sp)		# Salva $t0, $t1, $t2, $t3, $t4, $t5, $t6 na pilha
 			sw	$t1, 4 ($sp)
 			sw	$t2, 8 ($sp)
@@ -195,6 +197,8 @@ mostra_elemento_vetor:	addi	$sp, $sp, -28		# Aloca espaço para 7 palavras na pi
 			lw	$t5, 20 ($sp)
 			lw	$t6, 24 ($sp)
 			addi	$sp, $sp, 28		# Libera espaço de 7 palavras na pilha
+			lw	$ra, 0 ($sp)		# leio o retorno para mostra_vetor
+			addi	$sp, $sp, 4		# retira mostra_vetor da pilha
 			jr	$ra			# Retorna da rotina
 #------------------------------------------------------------------------------
 			.data				# Área de dados
@@ -202,10 +206,10 @@ mostra_elemento_vetor:	addi	$sp, $sp, -28		# Aloca espaço para 7 palavras na pi
 			# Variáveis e estruturas de dados do programa
 n:			.word 16			# Número de elementos do vetor (no máximo 16)
 			# Vetor a ser ordenado (com 16 valores entre 0 e 15)
-vetor:			.word 9 1 10 2 6 13 15 0 12 5 7 14 4 3 11 8
+#vetor:			.word 9 1 10 2 6 13 15 0 12 5 7 14 4 3 11 8
 #vetor:			.word 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 #vetor:			.word 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0
-#vetor:			.word 9 1 10 2 9 6 13 15 13 0 12 5 6 0 5 7
+vetor:			.word 9 1 10 2 9 6 13 15 13 0 12 5 6 0 5 7
 			# Strings para impressão de mensagens
 msg1:			.asciiz "\nOrdenação\n"
 msg2:			.asciiz "Tecle enter"
