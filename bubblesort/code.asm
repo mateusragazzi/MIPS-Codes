@@ -174,17 +174,40 @@ ler_vetor:	addi $sp, $sp, -4		# adiciona mais um nivel na pilha
 #		$s4: n
 #		$s5: i
 #		$t1: condicoes
+#		$t2 = vet[i]
+#		$t3 = n - 1
 
-mostra_vetor:	addi $sp, $sp, -4		# adiciona mais um nivel na pilha
+mostra_vetor:	addi $v0, $zero, 4		# Chamada ao sistema para escrever string na tela
+		la $a0, msgMostrarVet		# $a0 = endereço da string a ser escrita na tela
+		syscall
+		addi $sp, $sp, -4		# adiciona mais um nivel na pilha
 		sw $ra, 0, ($sp)		# salvo o retorno para a main na pilha
 		addi $s5, $zero, 0		# i = 0
 	for_vet:  slt $t1, $s5, $s4		# $t1 = i($s5) < n($s4)
 		  beq $t1, $zero, endfor_vet  	# condicao (i < n)
        		  addi $a0, $s5, 0		# adiciona como parâmetro (i)
 		  jal mostra_elemento_vetor
+		  
+  		  sll $t2, $s5, 2		# $t2 = 4 * i
+		  add $t2, $s1, $t2		# $t2 = $s1 + (4 * i)
+		  lw $t2, 0 ($t2)		# $t2 = vet[i]
+		  li  $v0, 1          		# serviço para printar um integer
+		  add $a0, $t2, $zero  		# carrega inteiro em $a
+		  syscall
+
+		  subi $t3, $s4, 1		# $t3 = n - 1
+		  slt $t1, $s5, $t3		# $t1 = i($s5) < n - 1($t3)
+		  beq $t1, $zero, endSeparar  	# condicao (i < (n - 1))
+		  addi $v0, $zero, 4		# Chamada ao sistema para escrever string na tela
+		  la $a0, separar		# $a0 = endereço da string a ser escrita na tela
+		  syscall
+	endSeparar:
 		  addi $s5, $s5, 1		# i++
 		  j for_vet 			# retorna loop
-	endfor_vet:	lw $ra, 0, ($sp)	# lê o retorno para a main da pilha
+	endfor_vet:	addi $v0, $zero, 4	# Chamada ao sistema para escrever string na tela
+			la $a0, pularLinha	# $a0 = endereço da string a ser escrita na tela
+			syscall
+			lw $ra, 0, ($sp)	# lê o retorno para a main da pilha
 			addi $sp, $sp, 4	# limpa pilha 
 			jr $ra			# retorna para a main
 #------------------------------------------------------------------------------
@@ -260,6 +283,9 @@ vetor:			.word 9 1 10 2 6 13 15 0 12 5 7 14 4 3 11 8
 msg1:			.asciiz "\nOrdenação\n"
 msgN:			.asciiz "\nDigite um N para o vetor:\n"
 msgLerI:		.asciiz "\nDigite um valor:\n"
+msgMostrarVet:		.asciiz "\nMostrando vetor:\n"
+pularLinha:		.asciiz "\n"
+separar:		.asciiz ", "
 msg2:			.asciiz "Tecle enter"
 			# Escala de 16 cores em azul
 escala_azul:		.word 0x00CCFFFF, 0x00BEEEFB, 0x00B0DDF8, 0x00A3CCF4, 0x0095BBF1, 0x0088AAEE, 0x007A99EA, 0x006C88E7, 0x005F77E3, 0x005166E0, 0x004455DD, 0x003644D9, 0x002833D6, 0x001B22D2, 0x000D11CF, 0x000000CC
