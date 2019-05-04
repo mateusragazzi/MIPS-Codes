@@ -45,6 +45,7 @@
 #		$s1: endereco inicial do vetor
 #		$s2: trocou (boolean)
 #		$s3: i - for
+#		$s4: n
 #		$t0: end memoria de vet[i]
 #		$t1: condicoes
 #		$t2: end memoria de vet[i + 1]
@@ -55,9 +56,9 @@
 main:		addi $v0, $zero, 4	# Chamada ao sistema para escrever string na tela
 		la $a0, msg1		# $a0 = endereço da string a ser escrita na tela
 		syscall
-		la $s0, n			# $s0 = endereço de limite
-		lw $s0, 0 ($s0)			# $s0 = n
-		addi $s0, $s0, -1		# limite = n - 1
+		la $s4, n			# $s4 = endereço de limite
+		lw $s4, 0 ($s4)			# $s4 = n
+		addi $s0, $s4, -1		# limite = n - 1
 		la $s1, vetor			# $s1 = endereço inicial do vetor
 		addi $s2, $zero, 1 		# trocou = 1 (true)
 	
@@ -123,20 +124,18 @@ troca:	lw $t0, 0 ($a0)		# $t0 = vet[$a0] -> $t0 = vet[i]
 #		for j = 0 ; j < n ; j++
 #			mostra_elemento_vetor(j)
 # Uso dos registradores:
-#		$s4: i
-#		$s5: n
+#		$s4: n
+#		$s5: i
 #		$t1: condicoes
 
 mostra_vetor:	addi $sp, $sp, -4		# adiciona mais um nivel na pilha
 		sw $ra, 0, ($sp)		# salvo o retorno para a main na pilha
-		la $s5, n			# $t7 = endereço de n
-		lw $s5, ($s5) 			# lê o tamanho do vetor
-		addi $s4, $zero, 0		# i = 0
-	for_vet:  slt $t1, $s4, $s5		# $t1 = i($s4) < n($s5)
+		addi $s5, $zero, 0		# i = 0
+	for_vet:  slt $t1, $s5, $s4		# $t1 = i($s5) < n($s4)
 		  beq $t1, $zero, endfor_vet  	# condicao (i < n)
-       		  addi $a0, $s4, 0		# adiciona como parâmetro (i)
+       		  addi $a0, $s5, 0		# adiciona como parâmetro (i)
 		  jal mostra_elemento_vetor
-		  addi $s4, $s4, 1		# i++
+		  addi $s5, $s5, 1		# i++
 		  j for_vet 			# retorna loop
 	endfor_vet:	lw $ra, 0, ($sp)	# lê o retorno para a main da pilha
 			addi $sp, $sp, 4	# limpa pilha 
@@ -206,10 +205,10 @@ mostra_elemento_vetor:	addi 	$sp, $sp, -4		# aloca espaço na pilha
 			# Variáveis e estruturas de dados do programa
 n:			.word 16			# Número de elementos do vetor (no máximo 16)
 			# Vetor a ser ordenado (com 16 valores entre 0 e 15)
-#vetor:			.word 9 1 10 2 6 13 15 0 12 5 7 14 4 3 11 8
+vetor:			.word 9 1 10 2 6 13 15 0 12 5 7 14 4 3 11 8
 #vetor:			.word 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 #vetor:			.word 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0
-vetor:			.word 9 1 10 2 9 6 13 15 13 0 12 5 6 0 5 7
+#vetor:			.word 9 1 10 2 9 6 13 15 13 0 12 5 6 0 5 7
 			# Strings para impressão de mensagens
 msg1:			.asciiz "\nOrdenação\n"
 msg2:			.asciiz "Tecle enter"
